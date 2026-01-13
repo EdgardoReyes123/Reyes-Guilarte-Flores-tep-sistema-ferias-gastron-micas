@@ -37,12 +37,44 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+# ================================================
+# ENVIRONMENT FILES - MICROSERVICES
+# ================================================
+
+# Ignorar TODOS los archivos .env en cualquier carpeta
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+**/.env.development
+**/.env.test
+
+# Ignorar nombres específicos de microservicios
+**/auth.env
+**/product.env
+**/products.env
+**/puestos.env
+**/pedidos.env
+**/gateway.env
+
+# PERO mantener los archivos de ejemplo
+!**/.env.example
+!**/auth.env.example
+!**/product.env.example
+!**/products.env.example
+
+# ================================================
+# MICROSERVICES BUILD OUTPUTS
+# ================================================
+
+# Build outputs en microservicios
+apps/microservicios/**/dist/
+apps/microservicios/**/node_modules/
+apps/microservicios/**/*.tsbuildinfo
+
+# ================================================
+# EXISTING CONFIGURATION
+# ================================================
 
 # temp directory
 .temp
@@ -57,7 +89,9 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Environment variables
+# Environment variables (legacy)
 .env
 .env.production
 .env.test
+.env.development
+.env.local
