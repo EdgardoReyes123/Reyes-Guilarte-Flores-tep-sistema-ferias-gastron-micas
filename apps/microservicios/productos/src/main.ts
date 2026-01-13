@@ -1,40 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('ProductsMicroservice');
 
-  // Microservicio TCP
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
-    options: {
-      host: '0.0.0.0',
-      port: 3004,
+  // Crear SOLO microservicio TCP
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.TCP,
+      options: {
+        host: '0.0.0.0', // Accesible desde otros contenedores/hosts
+        port: 3004,
+        retryAttempts: 5,
+        retryDelay: 3000,
+      },
     },
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
   );
 
-  app.enableCors();
+  // Opcional: agregar pipes globales si necesitas validación
+  // app.useGlobalPipes(new ValidationPipe());
 
-  await app.startAllMicroservices();
-  await app.listen(3003);
+  await app.listen();
 
-  console.log(`
-=================================
-Microservicio de Productos y Catálogo
-HTTP API: http://localhost:3003
- RPC TCP: localhost:3004
-=================================
-  `);
+  logger.log('=================================');
+  logger.log('📡 MICROSERVICIO PRODUCTOS ACTIVO');
+  logger.log(`📍 Puerto TCP: 3004`);
+  logger.log(`🏷️  Nombre: products-service`);
+  logger.log('=================================');
 }
 
 bootstrap();

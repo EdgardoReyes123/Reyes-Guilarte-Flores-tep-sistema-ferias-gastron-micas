@@ -1,16 +1,16 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
   Query,
   Headers,
   UseInterceptors,
   HttpException,
-  HttpStatus 
+  HttpStatus,
 } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ProductsService } from './products.service';
@@ -22,9 +22,11 @@ import { FilterProductsDto } from './dto/filter-products.dto';
 const LoggingInterceptor = {
   intercept(context: any, next: any) {
     const request = context.switchToHttp().getRequest();
-    console.log(`[${new Date().toISOString()}] ${request.method} ${request.url}`);
+    console.log(
+      `[${new Date().toISOString()}] ${request.method} ${request.url}`,
+    );
     return next.handle();
-  }
+  },
 };
 
 @Controller('products')
@@ -61,18 +63,26 @@ export class ProductsController {
   @Post()
   async create(
     @Body() createProductDto: CreateProductDto,
-    @Headers('x-entrepreneur-id') entrepreneurId: string
+    @Headers('x-entrepreneur-id') entrepreneurId: string,
   ) {
     if (!entrepreneurId) {
-      throw new HttpException('Se requiere ID de emprendedor', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Se requiere ID de emprendedor',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     return await this.productsService.create(createProductDto, entrepreneurId);
   }
 
   @Get('entrepreneur/my-products')
-  async findByEntrepreneur(@Headers('x-entrepreneur-id') entrepreneurId: string) {
+  async findByEntrepreneur(
+    @Headers('x-entrepreneur-id') entrepreneurId: string,
+  ) {
     if (!entrepreneurId) {
-      throw new HttpException('Se requiere ID de emprendedor', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Se requiere ID de emprendedor',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     return await this.productsService.findByEntrepreneur(entrepreneurId);
   }
@@ -81,10 +91,13 @@ export class ProductsController {
   async update(
     @Param('id') id: string,
     @Body() updateData: UpdateProductDto,
-    @Headers('x-entrepreneur-id') entrepreneurId: string
+    @Headers('x-entrepreneur-id') entrepreneurId: string,
   ) {
     if (!entrepreneurId) {
-      throw new HttpException('Se requiere ID de emprendedor', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Se requiere ID de emprendedor',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     return await this.productsService.update(id, updateData, entrepreneurId);
   }
@@ -92,10 +105,13 @@ export class ProductsController {
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-entrepreneur-id') entrepreneurId: string
+    @Headers('x-entrepreneur-id') entrepreneurId: string,
   ) {
     if (!entrepreneurId) {
-      throw new HttpException('Se requiere ID de emprendedor', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Se requiere ID de emprendedor',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     await this.productsService.remove(id, entrepreneurId);
     return { message: 'Producto eliminado exitosamente' };
@@ -105,7 +121,10 @@ export class ProductsController {
 
   @MessagePattern({ cmd: 'create_product' })
   async handleCreateProduct(@Payload() data: any) {
-    return await this.productsService.create(data.productData, data.entrepreneurId);
+    return await this.productsService.create(
+      data.productData,
+      data.entrepreneurId,
+    );
   }
 
   @MessagePattern({ cmd: 'get_product_by_id' })
@@ -120,7 +139,10 @@ export class ProductsController {
 
   @MessagePattern({ cmd: 'update_stock' })
   async handleUpdateStock(@Payload() data: any) {
-    return await this.productsService.updateStock(data.productId, data.quantity);
+    return await this.productsService.updateStock(
+      data.productId,
+      data.quantity,
+    );
   }
 
   @MessagePattern({ cmd: 'get_products_by_stall' })
