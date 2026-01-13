@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "../../../dist/apps/microservicios/auth"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/main.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

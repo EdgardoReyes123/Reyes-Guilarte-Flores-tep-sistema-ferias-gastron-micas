@@ -1,41 +1,42 @@
 {
-    "name":  "reyes-guilarte-flores-tep-sistema-ferias-gastronomicas",
-    "version":  "1.0.0",
-    "description":  "Sistema distribuido para ferias gastron?micas",
-    "private":  true,
-    "scripts":  {
-                    "build":  "nest build",
-                    "start:dev:auth":  "nest start microservicios/auth --watch",
-                    "start:dev:productos":  "nest start microservicios/productos --watch",
-                    "start:dev:all":  "concurrently \"npm run start:dev:auth\" \"npm run start:dev:productos\"",
-                    "docker:up":  "docker-compose up -d",
-                    "docker:down":  "docker-compose down",
-                    "start":  "echo \u0027??  Para desarrollo ejecuta: npm run start:dev:auth O npm run start:dev:productos\u0027",
-                    "start:prod:auth":  "node dist/apps/microservicios/auth/src/main.js",
-                    "start:prod:productos":  "node dist/apps/microservicios/productos/src/main.js"
-                },
-    "dependencies":  {
-                         "@nestjs/common":  "^11.0.0",
-                         "@nestjs/config":  "^4.0.0",
-                         "@nestjs/core":  "^11.0.0",
-                         "@nestjs/jwt":  "^11.0.0",
-                         "@nestjs/microservices":  "^11.0.0",
-                         "@nestjs/platform-express":  "^11.0.0",
-                         "@nestjs/typeorm":  "^11.0.0",
-                         "bcrypt":  "^5.1.1",
-                         "class-transformer":  "^0.5.1",
-                         "class-validator":  "^0.14.1",
-                         "pg":  "^8.11.3",
-                         "reflect-metadata":  "^0.1.14",
-                         "rxjs":  "^7.8.1",
-                         "typeorm":  "^0.3.20"
-                     },
-    "devDependencies":  {
-                            "@nestjs/cli":  "^11.0.0",
-                            "@nestjs/schematics":  "^11.0.0",
-                            "@types/bcrypt":  "^5.0.1",
-                            "@types/node":  "^20.0.0",
-                            "concurrently":  "^8.2.2",
-                            "typescript":  "^5.0.0"
-                        }
+  "name": "reyes-guilarte-flores-tep-sistema-ferias-gastronomicas",
+  "version": "1.0.0",
+  "description": "Sistema distribuido para ferias gastron?micas",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "start:dev:auth": "nest start microservicios/auth --watch",
+    "start:dev:productos": "nest start microservicios/productos --watch",
+    "start:dev:gateway": "nest start apps/api-gateway --watch",
+    "start:dev:all": "concurrently \"npm run start:dev:auth\" \"npm run start:dev:productos\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "start": "echo '??  Para desarrollo ejecuta: npm run start:dev:auth O npm run start:dev:productos'",
+    "start:prod:auth": "node dist/apps/microservicios/auth/src/main.js",
+    "start:prod:productos": "node dist/apps/microservicios/productos/src/main.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/microservices": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "pg": "^8.11.3",
+    "reflect-metadata": "^0.1.14",
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/bcrypt": "^5.0.1",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.2.2",
+    "typescript": "^5.0.0"
+  }
 }

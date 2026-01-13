@@ -9,13 +9,13 @@
     "tsConfigPath": "tsconfig.json"
   },
   "projects": {
-    "productos": {
+    "api-gateway": {
       "type": "application",
-      "root": "apps/microservicios/productos",
+      "root": "apps/api-gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/productos/src",
+      "sourceRoot": "apps/api-gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/microservicios/productos/tsconfig.json"
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
       }
     },
     "auth": {
@@ -25,6 +25,15 @@
       "sourceRoot": "apps/microservicios/auth/src",
       "compilerOptions": {
         "tsConfigPath": "apps/microservicios/auth/tsconfig.json"
+      }
+    },
+    "productos": {
+      "type": "application",
+      "root": "apps/microservicios/productos",
+      "entryFile": "main",
+      "sourceRoot": "apps/microservicios/productos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/productos/tsconfig.json"
       }
     }
   }

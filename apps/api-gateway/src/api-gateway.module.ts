@@ -1,0 +1,33 @@
+﻿import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ApiGatewayController } from './api-gateway.controller';
+
+@Module({
+  imports: [
+    // Configurar comunicación RPC con Auth Service
+    ClientsModule.register([
+      {
+        name: 'AUTH_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'localhost',
+          port: 3001, // Puerto del Auth Service
+        },
+      },
+    ]),
+    // Configurar comunicación RPC con Productos Service
+    ClientsModule.register([
+      {
+        name: 'PRODUCTOS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'localhost',
+          port: 3002, // Puerto del Productos Service
+        },
+      },
+    ]),
+  ],
+  controllers: [ApiGatewayController],
+  // NO providers - El gateway no tiene lógica de negocio
+})
+export class ApiGatewayModule {}
