@@ -1,0 +1,234 @@
+{
+  "info": {
+    "_postman_id": "products-catalog-microservice",
+    "name": "Products Catalog Microservice",
+    "description": "Colección de endpoints TCP para el microservicio #3 de Productos y Catálogo del Sistema de Ferias Gastronómicas.\n\n⚠️ IMPORTANTE: Este microservicio usa TCP (no HTTP). Para probarlo, usar netcat/telnet en terminal.\n\n📋 Documenta los 12 endpoints requeridos según el proyecto.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "item": [
+    {
+      "name": " 1. Health Check / Verificar Servicio",
+      "request": {
+        "description": "Verifica que el microservicio está respondiendo. Retorna array de productos (vacío si no hay).",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_all_products"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Este endpoint siempre debería responder",
+              "pm.test(\"Servicio respondiendo\", function() {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": " 2. Crear Producto (POST)",
+      "request": {
+        "description": "Crea un nuevo producto en el sistema. Campos obligatorios: name, description, price, stallId, category, stock.",
+        "method": "TCP",
+        "body": {
+          "cmd": "create_product",
+          "name": "Hamburguesa Especial",
+          "description": "Hamburguesa con queso, lechuga, tomate y salsa especial",
+          "price": 12.99,
+          "stallId": "stall-001",
+          "category": "Comida Rápida",
+          "stock": 50,
+          "images": ["hamburguesa1.jpg", "hamburguesa2.jpg"],
+          "preparationTime": "15-20 min"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 3. Listar Todos los Productos (GET)",
+      "request": {
+        "description": "Obtiene todos los productos del sistema (incluye inactivos). Para administradores/emprendedores.",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_all_products"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 4. Obtener Producto por ID (GET)",
+      "request": {
+        "description": "Obtiene un producto específico por su ID único.",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_product_by_id",
+          "id": "producto-id-aqui"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 5. Actualizar Producto (PUT)",
+      "request": {
+        "description": "Actualiza un producto existente. Solo el dueño del puesto puede actualizar.",
+        "method": "TCP",
+        "body": {
+          "cmd": "update_product",
+          "id": "producto-id-aqui",
+          "updateData": {
+            "name": "Hamburguesa Especial Actualizada",
+            "price": 14.99,
+            "stock": 30,
+            "description": "Ahora con doble queso",
+            "isAvailable": true
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 6. Actualizar Stock (PATCH)",
+      "request": {
+        "description": "Actualiza el stock de un producto. Usado por el servicio de Pedidos cuando se completa una venta.",
+        "method": "TCP",
+        "body": {
+          "cmd": "update_stock",
+          "productId": "producto-id-aqui",
+          "quantity": 20,
+          "operation": "decrement",
+          "orderId": "order-12345"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 7. Verificar Stock (POST)",
+      "request": {
+        "description": "Verifica si hay suficiente stock para una cantidad. Usado por el servicio de Pedidos antes de crear orden.",
+        "method": "TCP",
+        "body": {
+          "cmd": "check_stock",
+          "productId": "producto-id-aqui",
+          "quantity": 5
+        }
+      },
+      "response": [
+        {
+          "name": "Respuesta de stock disponible",
+          "originalRequest": {
+            "method": "TCP",
+            "body": {
+              "cmd": "check_stock",
+              "productId": "abc123",
+              "quantity": 5
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"isAvailable\": true,\n  \"availableStock\": 50,\n  \"productId\": \"abc123\",\n  \"productName\": \"Hamburguesa Especial\",\n  \"price\": 12.99\n}"
+        }
+      ]
+    },
+    {
+      "name": " 8. Productos por Puesto (GET)",
+      "request": {
+        "description": "Obtiene todos los productos de un puesto específico. Para emprendedores.",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_products_by_stall",
+          "stallId": "stall-001"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 9. Productos por Categoría (GET)",
+      "request": {
+        "description": "Filtra productos por categoría. Para catálogo público.",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_products_by_category",
+          "category": "Comida Rápida"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 10. Catálogo Público (GET)",
+      "request": {
+        "description": "Obtiene el catálogo público de productos disponibles (solo productos activos y con stock). Para clientes.",
+        "method": "TCP",
+        "body": {
+          "cmd": "get_public_catalog"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 11. Buscar Productos (GET)",
+      "request": {
+        "description": "Busca productos por término en nombre o descripción. Para catálogo público.",
+        "method": "TCP",
+        "body": {
+          "cmd": "search_products",
+          "searchTerm": "hamburguesa"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": " 12. Eliminar Producto (DELETE)",
+      "request": {
+        "description": "Elimina un producto del sistema (soft delete). Solo el dueño del puesto puede eliminar.",
+        "method": "TCP",
+        "body": {
+          "cmd": "delete_product",
+          "id": "producto-id-aqui"
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "console.log('Iniciando prueba de microservicio TCP');"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_tcp_url",
+      "value": "localhost:3003",
+      "type": "string",
+      "description": "Host y puerto del microservicio"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string",
+      "description": "ID del producto creado (se actualiza después de crear)"
+    },
+    {
+      "key": "stall_id",
+      "value": "stall-001",
+      "type": "string",
+      "description": "ID del puesto para pruebas"
+    }
+  ]
+}
