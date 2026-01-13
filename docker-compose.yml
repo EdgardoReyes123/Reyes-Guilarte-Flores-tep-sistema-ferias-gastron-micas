@@ -1,21 +1,121 @@
-version: '3.8'
 services:
-  postgres:
+  # ========== BASES DE DATOS ==========
+  
+  # 1. Base de datos para Autenticación
+  auth_db:
     image: postgres:15-alpine
-    container_name: products-postgres
+    container_name: auth-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: products_service_db
+      POSTGRES_DB: auth_service_db
     ports:
-       - "5433:5432"
+      - "5438:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - auth_postgres_data:/var/lib/postgresql/data
+    networks:
+      - feria_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
+  # 2. Base de datos para Puestos
+  puestos_db:
+    image: postgres:15-alpine
+    container_name: puestos-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: puestos_service_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - puestos_postgres_data:/var/lib/postgresql/data
+    networks:
+      - feria_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # 3. Base de datos para Productos
+  productos_db:
+    image: postgres:15-alpine
+    container_name: productos-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: products_service_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - productos_postgres_data:/var/lib/postgresql/data
+    networks:
+      - feria_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # 4. Base de datos para Pedidos
+  pedidos_db:
+    image: postgres:15-alpine
+    container_name: pedidos-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pedidos_service_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - pedidos_postgres_data:/var/lib/postgresql/data
+    networks:
+      - feria_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== ADMINISTRACIÓN (OPCIONAL) ==========
+  
+  # PgAdmin para gestionar todas las bases (opcional pero útil)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ferias.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - feria_network
+    restart: unless-stopped
+    depends_on:
+      - auth_db
+      - puestos_db
+      - productos_db
+      - pedidos_db
+
+# ========== VOLÚMENES ==========
 volumes:
-  postgres_data:
+  auth_postgres_data:
+  puestos_postgres_data:
+  productos_postgres_data:
+  pedidos_postgres_data:
+  pgadmin_data:
+
+# ========== REDES ==========
+networks:
+  feria_network:
+    driver: bridge

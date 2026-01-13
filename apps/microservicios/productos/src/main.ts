@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
-import { AppModule } from '../app.module';
+import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Microservicio TCP
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.TCP,
@@ -27,7 +27,7 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
   await app.listen(3003);
-  
+
   console.log(`
 =================================
 Microservicio de Productos y Catálogo
