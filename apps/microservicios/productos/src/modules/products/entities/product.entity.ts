@@ -1,55 +1,31 @@
-import { 
-  Entity, 
-  Column, 
-  PrimaryGeneratedColumn, 
-  CreateDateColumn, 
-  UpdateDateColumn 
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('products')
+@Entity('products', { schema: 'public' })
 export class Product {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string;  
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ name: 'stall_id', type: 'uuid' })
+  stallId: string;  
+
+  @Column({ name: 'name', type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ type: 'text', nullable: true })
-  description: string;
+  @Column({ name: 'price', type: 'decimal', precision: 10, scale: 2 })
+  price: number;  
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  @Column({ name: 'category', type: 'varchar', length: 100 })
+  category: string;  
 
-  @Column({ type: 'varchar', length: 50 })
-  category: string;
+  @Column({ name: 'stock', type: 'int' })
+  stock: number;  
 
-  @Column({ type: 'int', default: 0 })
-  stock: number;
+  @Column({ name: 'is_available', type: 'boolean', default: true })
+  isAvailable: boolean;  
 
-  @Column({ type: 'boolean', default: true })
-  isAvailable: boolean;
-
-  @Column({ type: 'boolean', default: true })
-  isActive: boolean;
-
-  @Column({ type: 'uuid' })
-  stallId: string;
-
-  @Column({ type: 'uuid' })
-  entrepreneurId: string;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
-  updateStock(quantity: number): void {
-    this.stock += quantity;
-    this.isAvailable = this.stock > 0;
-  }
-
-  hasEnoughStock(quantity: number): boolean {
-    return this.stock >= quantity;
-  }
 }
