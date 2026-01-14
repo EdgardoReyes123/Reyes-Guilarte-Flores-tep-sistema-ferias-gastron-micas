@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
+import { OrdersRpcController } from '../../microservice/orders.rpc.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
@@ -19,7 +20,7 @@ import { Order } from './entities/order.entity';
       },
     ]),
   ],
-  controllers: [OrdersController],
+  controllers: [OrdersController, OrdersRpcController],
   providers: [OrdersService],
   exports: [OrdersService],
 })
