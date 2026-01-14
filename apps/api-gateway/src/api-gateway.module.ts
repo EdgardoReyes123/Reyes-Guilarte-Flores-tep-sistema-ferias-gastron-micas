@@ -26,6 +26,17 @@ import { ApiGatewayController } from './api-gateway.controller';
         },
       },
     ]),
+    // Configurar comunicación RPC con Puestos Service
+    ClientsModule.register([
+      {
+        name: 'PUESTOS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: '127.0.0.1',
+          port: 3005, // Puerto del Puestos Service
+        },
+      },
+    ]),
   ],
   controllers: [ApiGatewayController],
   // NO providers - El gateway no tiene lógica de negocio

@@ -34,8 +34,8 @@ export class AuthGuard implements CanActivate {
 
       // Agregar información del usuario al request
       request.user = {
-        id: validationResult.userId,
-        role: validationResult.role,
+        id: validationResult.user.id,
+        role: validationResult.user.role,
       };
 
       return true;

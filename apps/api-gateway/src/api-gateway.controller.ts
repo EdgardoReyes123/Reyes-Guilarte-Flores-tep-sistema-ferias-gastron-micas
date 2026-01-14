@@ -7,25 +7,27 @@
   Body,
   Param,
   Inject,
-  Headers,
   Query,
+  Request,
   UseGuards,
   InternalServerErrorException,
+  Patch,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from './guards/auth.guard';
 import { catchError } from 'rxjs';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './guards/decorators/roles.decorator';
+import { AuthenticatedRequest } from './types/request.types';
 
 @Controller('api-gateway/v1')
 export class ApiGatewayController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     @Inject('PRODUCTOS_SERVICE') private readonly productosClient: ClientProxy,
-  ) {
-    // Si esto imprime una clase con métodos como 'send' y 'emit', la inyección fue exitosa
-    console.log('Auth Client Inyectado:', this.authClient);
-    console.log('Productos Client Inyectado:', this.productosClient);
-  }
+    @Inject('PUESTOS_SERVICE') private readonly puestosClient: ClientProxy,
+  ) {}
 
   // ========== ENDPOINTS PÚBLICOS ==========
 
@@ -42,7 +44,7 @@ export class ApiGatewayController {
   register(@Body() data: any) {
     return this.authClient.send({ cmd: 'auth.register' }, data).pipe(
       catchError((err) => {
-        // Si el DTO falla, aquí verás el array de errores de validación
+        // Si el DTO falla, aquí se verá el error
         console.log(
           'Detalle del error del Microservicio:',
           JSON.stringify(err, null, 2),
@@ -55,11 +57,6 @@ export class ApiGatewayController {
   @Post('auth/login')
   async login(@Body() data: any) {
     return this.authClient.send({ cmd: 'auth.login' }, data);
-  }
-
-  @Get('auth/health')
-  async authHealth() {
-    return this.authClient.send({ cmd: 'auth.health' }, {});
   }
 
   // ========== ENDPOINTS PROTEGIDOS ==========
@@ -80,6 +77,118 @@ export class ApiGatewayController {
         updateData,
       },
     );
+  }
+
+  // ----- PUESTOS -----
+  @Get('catalogo/puestos')
+  async getPuestosActivos() {
+    // Ruta pública, sin guards
+    return this.puestosClient.send({ cmd: 'puestos.findActivos' }, {});
+  }
+
+  @Get('health/puestos')
+  async healthCheckPuestos() {
+    // Ruta pública, sin guards
+    return this.puestosClient.send({ cmd: 'puestos.health' }, {});
+  }
+
+  // ========== RUTAS PROTEGIDAS DE PUESTOS ==========
+
+  // ----- CRUD PARA EMPRENDEDORES -----
+
+  @Post('puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async createPuesto(@Body() data: any, @Request() req: AuthenticatedRequest) {
+    const payload = {
+      ...data,
+      ownerId: req.user.id,
+      userRole: req.user.role,
+    };
+    return this.puestosClient.send({ cmd: 'puestos.create' }, payload);
+  }
+
+  @Get('puestos/mis-puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async getMisPuestos(@Request() req: AuthenticatedRequest) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.findByOwner' },
+      { ownerId: req.user.id },
+    );
+  }
+
+  @Get('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin')
+  async getPuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.findOne' },
+      {
+        id,
+        userId: req.user.id,
+        userRole: req.user.role,
+      },
+    );
+  }
+
+  @Patch('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async updatePuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: any,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const payload = {
+      id,
+      ownerId: req.user.id,
+      userRole: req.user.role,
+      ...data,
+    };
+    return this.puestosClient.send({ cmd: 'puestos.update' }, payload);
+  }
+
+  @Delete('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async deletePuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.delete' },
+      {
+        id,
+        userId: req.user.id,
+      },
+    );
+  }
+
+  // ----- ACCIONES PARA ORGANIZADORES -----
+
+  @Get('puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async getAllPuestos(@Query() filters: any) {
+    return this.puestosClient.send({ cmd: 'puestos.findAll' }, filters || {});
+  }
+
+  @Patch('puestos/:id/aprobar')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async aprobarPuesto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.puestosClient.send({ cmd: 'puestos.aprobar' }, { id });
+  }
+
+  @Patch('puestos/:id/activar')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async activarPuesto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.puestosClient.send({ cmd: 'puestos.activar' }, { id });
   }
 
   // ========== PRODUCTOS (algunos públicos, algunos protegidos) ==========

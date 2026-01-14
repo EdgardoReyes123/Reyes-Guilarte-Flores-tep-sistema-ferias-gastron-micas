@@ -35,6 +35,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/microservicios/productos/tsconfig.json"
       }
+    },
+    "puestos": {
+      "type": "application",
+      "root": "apps/microservicios/puestos",
+      "entryFile": "main",
+      "sourceRoot": "apps/microservicios/puestos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/puestos/tsconfig.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
     }
   }
 }
