@@ -1,0 +1,229 @@
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Inject,
+  Query,
+  Request,
+  UseGuards,
+  InternalServerErrorException,
+  Patch,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { AuthGuard } from './guards/auth.guard';
+import { catchError } from 'rxjs';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './guards/decorators/roles.decorator';
+import { AuthenticatedRequest } from './types/request.types';
+
+@Controller('api-gateway/v1')
+export class ApiGatewayController {
+  constructor(
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    @Inject('PRODUCTOS_SERVICE') private readonly productosClient: ClientProxy,
+    @Inject('PUESTOS_SERVICE') private readonly puestosClient: ClientProxy,
+  ) {}
+
+  // ========== ENDPOINTS PÚBLICOS ==========
+
+  @Get()
+  getInfo() {
+    return {
+      message: 'API Gateway - Sistema de Ferias Gastronómicas',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('auth/register')
+  register(@Body() data: any) {
+    return this.authClient.send({ cmd: 'auth.register' }, data).pipe(
+      catchError((err) => {
+        // Si el DTO falla, aquí se verá el error
+        console.log(
+          'Detalle del error del Microservicio:',
+          JSON.stringify(err, null, 2),
+        );
+        throw new InternalServerErrorException(err);
+      }),
+    );
+  }
+
+  @Post('auth/login')
+  async login(@Body() data: any) {
+    return this.authClient.send({ cmd: 'auth.login' }, data);
+  }
+
+  // ========== ENDPOINTS PROTEGIDOS ==========
+
+  @Get('auth/users/:id')
+  @UseGuards(AuthGuard) // El guard valida el token internamente
+  async getUser(@Param('id') id: string) {
+    return this.authClient.send({ cmd: 'auth.getUser' }, { id });
+  }
+
+  @Put('auth/users/:id')
+  @UseGuards(AuthGuard)
+  async updateUser(@Param('id') id: string, @Body() updateData: any) {
+    return this.authClient.send(
+      { cmd: 'auth.updateUser' },
+      {
+        id,
+        updateData,
+      },
+    );
+  }
+
+  // ----- PUESTOS -----
+  @Get('catalogo/puestos')
+  async getPuestosActivos() {
+    // Ruta pública, sin guards
+    return this.puestosClient.send({ cmd: 'puestos.findActivos' }, {});
+  }
+
+  @Get('health/puestos')
+  async healthCheckPuestos() {
+    // Ruta pública, sin guards
+    return this.puestosClient.send({ cmd: 'puestos.health' }, {});
+  }
+
+  // ========== RUTAS PROTEGIDAS DE PUESTOS ==========
+
+  // ----- CRUD PARA EMPRENDEDORES -----
+
+  @Post('puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async createPuesto(@Body() data: any, @Request() req: AuthenticatedRequest) {
+    const payload = {
+      ...data,
+      ownerId: req.user.id,
+      userRole: req.user.role,
+    };
+    return this.puestosClient.send({ cmd: 'puestos.create' }, payload);
+  }
+
+  @Get('puestos/mis-puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async getMisPuestos(@Request() req: AuthenticatedRequest) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.findByOwner' },
+      { ownerId: req.user.id },
+    );
+  }
+
+  @Get('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin')
+  async getPuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.findOne' },
+      {
+        id,
+        userId: req.user.id,
+        userRole: req.user.role,
+      },
+    );
+  }
+
+  @Patch('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async updatePuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: any,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    const payload = {
+      id,
+      ownerId: req.user.id,
+      userRole: req.user.role,
+      ...data,
+    };
+    return this.puestosClient.send({ cmd: 'puestos.update' }, payload);
+  }
+
+  @Delete('puestos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller')
+  async deletePuesto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.puestosClient.send(
+      { cmd: 'puestos.delete' },
+      {
+        id,
+        userId: req.user.id,
+      },
+    );
+  }
+
+  // ----- ACCIONES PARA ORGANIZADORES -----
+
+  @Get('puestos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async getAllPuestos(@Query() filters: any) {
+    return this.puestosClient.send({ cmd: 'puestos.findAll' }, filters || {});
+  }
+
+  @Patch('puestos/:id/aprobar')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async aprobarPuesto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.puestosClient.send({ cmd: 'puestos.aprobar' }, { id });
+  }
+
+  @Patch('puestos/:id/activar')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin')
+  async activarPuesto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.puestosClient.send({ cmd: 'puestos.activar' }, { id });
+  }
+
+  // ========== PRODUCTOS (algunos públicos, algunos protegidos) ==========
+
+  @Get('productos')
+  async getProductos(@Query() query: any) {
+    // Público - cualquiera puede ver productos
+    return this.productosClient.send({ cmd: 'getProductos' }, query || {});
+  }
+
+  @Get('productos/:id')
+  async getProducto(@Param('id') id: string) {
+    // Público
+    return this.productosClient.send({ cmd: 'getProducto' }, { id });
+  }
+
+  @Post('productos')
+  @UseGuards(AuthGuard)
+  async createProducto(@Body() data: any) {
+    // Solo emprendedores/organizadores
+    return this.productosClient.send({ cmd: 'createProducto' }, data);
+  }
+
+  @Put('productos/:id')
+  @UseGuards(AuthGuard)
+  async updateProducto(@Param('id') id: string, @Body() data: any) {
+    return this.productosClient.send(
+      { cmd: 'updateProducto' },
+      { id, ...data },
+    );
+  }
+
+  @Delete('productos/:id')
+  @UseGuards(AuthGuard)
+  async deleteProducto(@Param('id') id: string) {
+    return this.productosClient.send({ cmd: 'deleteProducto' }, { id });
+  }
+}
