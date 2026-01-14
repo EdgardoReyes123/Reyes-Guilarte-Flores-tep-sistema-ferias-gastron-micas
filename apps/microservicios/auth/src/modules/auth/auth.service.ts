@@ -28,6 +28,7 @@ export class AuthService {
   ) {}
 
   async register(userData: RegisterDto): Promise<AuthResponseDto> {
+    console.log('⭐ Registro de usuario iniciado en AuthService');
     // Validaciones ya hechas por DTO
     const existingUser = await this.usersRepository.findOne({
       where: { email: userData.email },
@@ -40,7 +41,7 @@ export class AuthService {
     const user = this.usersRepository.create({
       email: userData.email,
       password: userData.password,
-      name: userData.name,
+      name: userData.fullname,
       role: userData.role || UserRole.USER,
       isActive: true,
     });

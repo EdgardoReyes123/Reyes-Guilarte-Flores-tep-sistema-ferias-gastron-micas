@@ -10,8 +10,8 @@ import { ApiGatewayController } from './api-gateway.controller';
         name: 'AUTH_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: 'localhost',
-          port: 3001, // Puerto del Auth Service
+          host: '127.0.0.1',
+          port: 3002, // Puerto del Auth Service
         },
       },
     ]),
@@ -21,8 +21,8 @@ import { ApiGatewayController } from './api-gateway.controller';
         name: 'PRODUCTOS_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: 'localhost',
-          port: 3002, // Puerto del Productos Service
+          host: '127.0.0.1',
+          port: 3003, // Puerto del Productos Service
         },
       },
     ]),

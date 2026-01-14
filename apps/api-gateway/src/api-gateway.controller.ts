@@ -21,7 +21,11 @@ export class ApiGatewayController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     @Inject('PRODUCTOS_SERVICE') private readonly productosClient: ClientProxy,
-  ) {}
+  ) {
+    // Si esto imprime una clase con métodos como 'send' y 'emit', la inyección fue exitosa
+    console.log('Auth Client Inyectado:', this.authClient);
+    console.log('Productos Client Inyectado:', this.productosClient);
+  }
 
   // ========== ENDPOINTS PÚBLICOS ==========
 
@@ -38,10 +42,12 @@ export class ApiGatewayController {
   register(@Body() data: any) {
     return this.authClient.send({ cmd: 'auth.register' }, data).pipe(
       catchError((err) => {
-        console.error('Error conectando al microservicio:', err);
-        throw new InternalServerErrorException(
-          'No se pudo contactar con el microservicio',
+        // Si el DTO falla, aquí verás el array de errores de validación
+        console.log(
+          'Detalle del error del Microservicio:',
+          JSON.stringify(err, null, 2),
         );
+        throw new InternalServerErrorException(err);
       }),
     );
   }
