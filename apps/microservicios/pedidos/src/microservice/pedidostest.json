@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "API Gateway - Ferias Gastronómicas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0",
+    "description": "Colección de pruebas para endpoints principales (auth, productos, puestos, orders)"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api-gateway/v1", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@example.com\",\n  \"password\": \"password123\",\n  \"fullname\": \"Cliente Ejemplo\"\n}" , "options": { "raw": { "language": "json" } }
+      },
+      "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth","register"] }
+    }
+    },
+    {
+      "name": "Auth - Login (set token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();",
+              "if (body && body.access_token) {",
+              "  pm.collectionVariables.set('token', body.access_token);",
+              "  console.log('token almacenado en variable de colección');",
+              "} else if (body && body.access_token === undefined && body.user && body.access_token) {",
+              "  pm.collectionVariables.set('token', body.access_token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"cliente@example.com\",\n  \"password\": \"password123\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"] }
+      }
+    },
+    {
+      "name": "Catalogo - Puestos activos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/catalogo/puestos", "host": ["{{baseUrl}}"], "path": ["catalogo","puestos"] }
+      }
+    },
+    {
+      "name": "Productos - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/productos", "host": ["{{baseUrl}}"], "path": ["productos"] }
+      }
+    },
+    {
+      "name": "Producto - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/productos/:id", "host": ["{{baseUrl}}"], "path": ["productos",":id"] }
+      }
+    },
+    {
+      "name": "Productos - Check Stock",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"<PRODUCT_UUID>\", \"quantity\": 2\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/productos/check-stock", "host": ["{{baseUrl}}"], "path": ["productos","check-stock"] }
+      }
+    },
+    {
+      "name": "Productos - Decrement Stock",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"productId\": \"<PRODUCT_UUID>\", \"quantity\": 1\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/productos/decrement-stock", "host": ["{{baseUrl}}"], "path": ["productos","decrement-stock"] }
+      }
+    },
+    {
+      "name": "Orders - Create (customer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    { \"productId\": \"<PRODUCT_UUID>\", \"quantity\": 2 }\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+      }
+    },
+    {
+      "name": "Orders - My Orders (customer)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/orders/my", "host": ["{{baseUrl}}"], "path": ["orders","my"] }
+      }
+    },
+    {
+      "name": "Orders - Get Order",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/orders/:id", "host": ["{{baseUrl}}"], "path": ["orders",":id"] }
+      }
+    },
+    {
+      "name": "Orders - Update Status (seller/admin)",
+      "request": {
+        "method": "PATCH",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "body": { "mode": "raw", "raw": "{ \"status\": \"PREPARING\" }", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/orders/:id/status", "host": ["{{baseUrl}}"], "path": ["orders",":id","status"] }
+      }
+    },
+    {
+      "name": "Orders - Stall Sales (seller)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+        "url": { "raw": "{{baseUrl}}/orders/stall/:stallId/sales", "host": ["{{baseUrl}}"], "path": ["orders","stall",":stallId","sales"] }
+      }
+    }
+  ]
+}
