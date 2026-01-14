@@ -1,86 +1,37 @@
-import { Controller, UsePipes } from '@nestjs/common';
-import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+// products.controller.ts - SOLO para comunicación entre microservicios (TCP/RPC)
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { RpcValidationPipe } from '../common/pipes/rpc-validation.pipe';
+import { FilterProductsDto } from './dto/filter-products.dto';
 
 @Controller()
-@UsePipes(new RpcValidationPipe())
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @MessagePattern({ cmd: 'products.create' })
-  async create(@Payload() data: CreateProductDto) {
-    try {
-      return await this.productsService.create(data);
-    } catch (error) {
-      throw new RpcException({
-        status: error.status || 400,
-        message: error.message,
-        error: error.constructor.name,
-      });
-    }
+  @MessagePattern('productos.findAll')
+  findAll(@Payload() filters: FilterProductsDto) {
+    return this.productsService.findAll(filters);
   }
 
-  @MessagePattern({ cmd: 'products.findAll' })
-  async findAll(@Payload() filters: any) {
-    try {
-      return await this.productsService.findAll(filters);
-    } catch (error) {
-      throw new RpcException({
-        status: error.status || 400,
-        message: error.message,
-        error: error.constructor.name,
-      });
-    }
+  @MessagePattern('productos.create')
+  create(@Payload() createProductDto: CreateProductDto) {
+    return this.productsService.create(createProductDto);
   }
 
-  @MessagePattern({ cmd: 'products.findOne' })
-  async findOne(@Payload() data: { id: string }) {
-    try {
-      return await this.productsService.findOne(data.id);
-    } catch (error) {
-      throw new RpcException({
-        status: error.status || 404,
-        message: error.message,
-        error: error.constructor.name,
-      });
-    }
+  @MessagePattern('productos.findOne')
+  findOne(@Payload() id: number) {
+    return this.productsService.findOne(id);
   }
 
-  @MessagePattern({ cmd: 'products.update' })
-  async update(@Payload() data: { id: string; updateData: UpdateProductDto }) {
-    try {
-      return await this.productsService.update(data.id, data.updateData);
-    } catch (error) {
-      throw new RpcException({
-        status: error.status || 400,
-        message: error.message,
-        error: error.constructor.name,
-      });
-    }
+  @MessagePattern('productos.update')
+  update(@Payload() data: { id: number, updateData: UpdateProductDto }) {
+    return this.productsService.update(data.id, data.updateData);
   }
 
-  @MessagePattern({ cmd: 'products.delete' })
-  async remove(@Payload() data: { id: string }) {
-    try {
-      return await this.productsService.remove(data.id);
-    } catch (error) {
-      throw new RpcException({
-        status: error.status || 404,
-        message: error.message,
-        error: error.constructor.name,
-      });
-    }
-  }
-
-  @MessagePattern({ cmd: 'products.health' })
-  async healthCheck() {
-    return { 
-      status: 'ok', 
-      service: 'products', 
-      timestamp: new Date().toISOString() 
-    };
+  @MessagePattern('productos.remove')
+  remove(@Payload() id: number) {
+    return this.productsService.remove(id);
   }
 }

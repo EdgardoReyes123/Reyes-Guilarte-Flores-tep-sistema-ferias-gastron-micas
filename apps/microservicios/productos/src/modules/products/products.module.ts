@@ -1,26 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ProductsController } from './products.controller';
-import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
+import { ProductsService } from './products.service';
+import { ProductsController } from './products.controller'; // SOLO este controlador
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Product]),
-    ClientsModule.register([
-      {
-        name: 'STALLS_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: 'localhost',
-          port: 3002,
-        },
-      },
-    ]),
-  ],
-  controllers: [ProductsController],
+  imports: [TypeOrmModule.forFeature([Product])],
+  controllers: [ProductsController], // Solo el controlador TCP
   providers: [ProductsService],
-  exports: [ProductsService],
+  exports: [ProductsService]
 })
 export class ProductsModule {}
