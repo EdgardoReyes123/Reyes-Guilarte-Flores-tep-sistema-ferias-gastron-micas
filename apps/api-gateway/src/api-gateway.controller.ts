@@ -16,7 +16,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from './guards/auth.guard';
 import { catchError } from 'rxjs';
 
-@Controller('api-gateway')
+@Controller('api-gateway/v1')
 export class ApiGatewayController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,

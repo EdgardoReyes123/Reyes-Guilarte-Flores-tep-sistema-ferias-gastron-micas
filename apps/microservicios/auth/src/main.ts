@@ -21,7 +21,7 @@ async function bootstrap() {
         retryAttempts: 5,
         retryDelay: 3000,
       },
-      logger: ['log', 'error', 'warn', 'debug', 'verbose'], // <--- ESTO ES VITAL
+      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
     },
   );
 
@@ -50,8 +50,6 @@ async function bootstrap() {
   logger.log('=================================');
   logger.log('🔐 MICROSERVICIO AUTH - JWT + DTOs');
   logger.log(`📍 Puerto TCP: 3002`);
-  logger.log(`✅ Validación: Habilitada`);
-  logger.log(`📋 DTOs: RegisterDto, LoginDto, ValidateTokenDto`);
   logger.log('=================================');
 }
 

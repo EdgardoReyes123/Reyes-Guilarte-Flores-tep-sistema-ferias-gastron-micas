@@ -28,7 +28,7 @@ export class AuthController {
     }
   }
 
-  @MessagePattern('auth.login')
+  @MessagePattern({ cmd: 'auth.login' })
   async login(@Payload() data: LoginDto) {
     try {
       return await this.authService.login(data);
@@ -41,7 +41,7 @@ export class AuthController {
     }
   }
 
-  @MessagePattern('auth.validate')
+  @MessagePattern({ cmd: 'auth.validateToken' })
   async validateToken(@Payload() data: ValidateTokenDto) {
     try {
       return await this.authService.validateToken(data.token);
@@ -54,7 +54,7 @@ export class AuthController {
     }
   }
 
-  @MessagePattern('auth.getUser')
+  @MessagePattern({ cmd: 'auth.getUser' })
   async getUser(@Payload() data: GetUserDto) {
     try {
       return await this.authService.getUserById(data.id);
@@ -67,7 +67,7 @@ export class AuthController {
     }
   }
 
-  @MessagePattern('auth.updateUser')
+  @MessagePattern({ cmd: 'auth.updateUser' })
   async updateUser(@Payload() data: { id: string; updateData: UpdateUserDto }) {
     try {
       return await this.authService.updateUser(data.id, data.updateData);
@@ -78,10 +78,5 @@ export class AuthController {
         error: error.constructor.name,
       });
     }
-  }
-
-  @MessagePattern('auth.health')
-  async health() {
-    return await this.authService.healthCheck();
   }
 }

@@ -27,8 +27,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(userData: RegisterDto): Promise<AuthResponseDto> {
-    console.log('⭐ Registro de usuario iniciado en AuthService');
+  async register(userData: RegisterDto): Promise<{
+    usuario: { id: string; email: string; name: string; role: UserRole };
+  }> {
     // Validaciones ya hechas por DTO
     const existingUser = await this.usersRepository.findOne({
       where: { email: userData.email },
@@ -49,16 +50,13 @@ export class AuthService {
     await this.usersRepository.save(user);
     this.logger.log(`Usuario registrado: ${user.email}`);
 
-    const token = await this.generateToken(user);
-
     return {
-      user: {
+      usuario: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role as UserRole,
       },
-      access_token: token,
     };
   }
 
@@ -105,6 +103,7 @@ export class AuthService {
 
   async validateToken(token: string): Promise<ValidateTokenResponseDto> {
     try {
+      console.log('Validating token:', token);
       const payload = this.jwtService.verify(token);
 
       const user = await this.usersRepository.findOne({
@@ -187,27 +186,6 @@ export class AuthService {
 
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
-  }
-
-  async healthCheck(): Promise<HealthResponseDto> {
-    try {
-      await this.usersRepository.query('SELECT 1');
-
-      return {
-        status: 'healthy',
-        service: 'auth',
-        timestamp: new Date().toISOString(),
-        database: 'connected',
-      };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        service: 'auth',
-        timestamp: new Date().toISOString(),
-        database: 'disconnected',
-        error: error.message,
-      };
-    }
   }
 
   private async generateToken(user: User): Promise<string> {

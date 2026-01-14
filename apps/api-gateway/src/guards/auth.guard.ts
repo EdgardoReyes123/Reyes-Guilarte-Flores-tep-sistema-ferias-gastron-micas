@@ -1,15 +1,23 @@
-﻿import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject } from '@nestjs/common';
+﻿import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  Inject,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Observable, lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Inject('AUTH_SERVICE') private readonly authClient: ClientProxy) {}
+  constructor(
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    
+
     if (!token) {
       throw new UnauthorizedException('Token is required');
     }
@@ -17,7 +25,7 @@ export class AuthGuard implements CanActivate {
     try {
       // Llamar al Auth Service para validar el token
       const validationResult = await lastValueFrom(
-        this.authClient.send({ cmd: 'auth.validateToken' }, { token })
+        this.authClient.send({ cmd: 'auth.validateToken' }, { token }),
       );
 
       if (!validationResult.valid) {
@@ -32,6 +40,7 @@ export class AuthGuard implements CanActivate {
 
       return true;
     } catch (error) {
+      console.error('Token validation error:', error);
       throw new UnauthorizedException('Token validation failed');
     }
   }
