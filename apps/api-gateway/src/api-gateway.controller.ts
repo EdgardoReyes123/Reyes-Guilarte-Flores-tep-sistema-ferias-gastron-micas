@@ -66,8 +66,8 @@ export class ApiGatewayController {
   @Get('auth/users')
   @UseGuards(AuthGuard) // El guard valida el token internamente
   async getUser(@Request() req: AuthenticatedRequest) {
-    const userId = req.user.id;
-    return this.authClient.send({ cmd: 'auth.getUser' }, { userId });
+    const id = req.user.id;
+    return this.authClient.send({ cmd: 'auth.getUser' }, { id });
   }
 
   @Put('auth/users')
