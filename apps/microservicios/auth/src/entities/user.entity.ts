@@ -14,25 +14,29 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column()
+  @Column({ length: 255 })
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ length: 50 })
   name: string;
 
-  @Column({ default: 'user' })
-  role: string; // 'user', 'admin', 'seller'
+  @Column({
+    type: 'enum',
+    enum: ['user', 'admin', 'seller'],
+    default: 'user',
+  })
+  role: string;
 
-  @Column({ default: true })
+  @Column({ default: true, name: 'is_active' })
   isActive: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @BeforeInsert()

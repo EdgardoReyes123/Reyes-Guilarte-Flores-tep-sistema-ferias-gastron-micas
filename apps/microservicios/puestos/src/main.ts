@@ -1,3 +1,4 @@
+// microservicios/puestos/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import {
   MicroserviceOptions,
@@ -9,7 +10,7 @@ import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const logger = new Logger('AuthMicroservice');
+  const logger = new Logger('PuestosMicroservice');
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
@@ -17,7 +18,7 @@ async function bootstrap() {
       transport: Transport.TCP,
       options: {
         host: '127.0.0.1',
-        port: 3002,
+        port: 3005, // Puerto específico para puestos
         retryAttempts: 5,
         retryDelay: 3000,
       },
@@ -35,22 +36,38 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        // Esto convierte el error de validación en algo que el Gateway puede leer
-        return new RpcException(errors);
+        // Convierte errores de validación en RpcException
+        const errorMessages = errors.map((error) => ({
+          property: error.property,
+          constraints: error.constraints,
+        }));
+        return new RpcException({
+          message: 'Validation failed',
+          errors: errorMessages,
+          statusCode: 400,
+        });
       },
     }),
   );
 
+  // Manejo de excepciones no controladas
   process.on('uncaughtException', (err) => {
-    console.error('❌ CRASH NO CONTROLADO:', err);
+    logger.error('❌ Excepción no controlada en Puestos:', err);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('❌ Rechazo de promesa no manejado en Puestos:', reason);
   });
 
   await app.listen();
 
   logger.log('=================================');
-  logger.log('🔐 MICROSERVICIO AUTH - JWT + DTOs');
-  logger.log(`📍 Puerto TCP: 3002`);
+  logger.log('🏪 MICROSERVICIO DE PUESTOS');
+  logger.log(`📍 Puerto TCP: 3005`);
   logger.log('=================================');
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('❌ Error fatal al iniciar microservicio de puestos:', error);
+  process.exit(1);
+});
