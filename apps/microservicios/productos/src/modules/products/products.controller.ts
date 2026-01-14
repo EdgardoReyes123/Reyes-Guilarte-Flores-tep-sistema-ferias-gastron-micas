@@ -72,6 +72,30 @@ export class ProductsController {
     }
   }
 
+  @MessagePattern({ cmd: 'check_stock' })
+  async checkStock(@Payload() data: any) {
+    try {
+      const { productId, quantity } = data;
+      this.logger.log(`Verificando stock para producto ${productId} cantidad ${quantity}`);
+      return await this.productsService.checkStock(productId, quantity);
+    } catch (error) {
+      this.logger.error(`Error en check_stock: ${error.message}`);
+      throw new RpcException({ message: error.message || 'Error verificando stock', statusCode: error.status || 500 });
+    }
+  }
+
+  @MessagePattern({ cmd: 'decrement_stock' })
+  async decrementStock(@Payload() data: any) {
+    try {
+      const { productId, quantity } = data;
+      this.logger.log(`Decrementando stock para producto ${productId} cantidad ${quantity}`);
+      return await this.productsService.decrementStock(productId, quantity);
+    } catch (error) {
+      this.logger.error(`Error en decrement_stock: ${error.message}`);
+      throw new RpcException({ message: error.message || 'Error decrementando stock', statusCode: error.status || 500 });
+    }
+  }
+
   @MessagePattern({ cmd: 'updateProducto' })
   async update(@Payload() data: any) {
     try {

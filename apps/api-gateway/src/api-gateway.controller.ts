@@ -239,6 +239,30 @@ export class ApiGatewayController {
     return this.productosClient.send({ cmd: 'productos.health' }, {});
   }
 
+  @Post('productos/check-stock')
+  async checkStock(@Body() body: any) {
+    const { productId, quantity } = body || {};
+    if (!productId || typeof quantity !== 'number') {
+      throw new BadRequestException('productId y quantity son requeridos');
+    }
+
+    return firstValueFrom(
+      this.productosClient.send({ cmd: 'check_stock' }, { productId, quantity }),
+    );
+  }
+
+  @Post('productos/decrement-stock')
+  async decrementStock(@Body() body: any) {
+    const { productId, quantity } = body || {};
+    if (!productId || typeof quantity !== 'number') {
+      throw new BadRequestException('productId y quantity son requeridos');
+    }
+
+    return firstValueFrom(
+      this.productosClient.send({ cmd: 'decrement_stock' }, { productId, quantity }),
+    );
+  }
+
   // ========== PEDIDOS / VENTAS ==========
 
   @Post('orders')
