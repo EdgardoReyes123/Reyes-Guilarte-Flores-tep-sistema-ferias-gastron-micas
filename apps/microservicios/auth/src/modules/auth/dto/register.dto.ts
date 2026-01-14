@@ -10,7 +10,7 @@ import {
 import { Transform } from 'class-transformer';
 
 export enum UserRole {
-  USER = 'user',
+  CUSTOMER = 'customer',
   ADMIN = 'admin',
   SELLER = 'seller',
 }
@@ -36,7 +36,7 @@ export class RegisterDto {
   fullname: string;
 
   @IsOptional()
-  @IsEnum(UserRole, { message: 'El rol debe ser user, admin o seller' })
-  @Transform(({ value }) => value || UserRole.USER)
+  @IsEnum(UserRole, { message: 'El rol debe ser customer, admin o seller' })
+  @Transform(({ value }) => value || UserRole.CUSTOMER)
   role?: UserRole;
 }

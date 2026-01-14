@@ -43,7 +43,7 @@ export class AuthService {
       email: userData.email,
       password: userData.password,
       name: userData.fullname,
-      role: userData.role || UserRole.USER,
+      role: userData.role || UserRole.CUSTOMER,
       isActive: true,
     });
 

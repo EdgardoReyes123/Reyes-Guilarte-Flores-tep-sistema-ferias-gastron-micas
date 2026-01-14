@@ -16,10 +16,8 @@ export class AuthController {
   @MessagePattern({ cmd: 'auth.register' })
   async register(@Payload() data: RegisterDto) {
     try {
-      console.log('Llega la petición');
       return await this.authService.register(data);
     } catch (error) {
-      console.log('Error en el controlador del microservicio:', error);
       throw new RpcException({
         status: error.status || 400,
         message: error.message,
