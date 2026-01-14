@@ -1,8 +1,9 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "../../../dist/apps/microservicios/pedidos",
+    "rootDir": "src",
+    "baseUrl": "src",
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

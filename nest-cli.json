@@ -45,6 +45,15 @@
         "tsConfigPath": "apps/microservicios/puestos/tsconfig.json"
       }
     },
+    "pedidos": {
+      "type": "application",
+      "root": "apps/microservicios/pedidos",
+      "entryFile": "main",
+      "sourceRoot": "apps/microservicios/pedidos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/pedidos/tsconfig.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",

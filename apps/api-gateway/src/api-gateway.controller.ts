@@ -200,21 +200,25 @@ export class ApiGatewayController {
   }
 
   @Get('productos/:id')
-  async getProducto(@Param('id') id: string) {
+  async getProducto(@Param('id', ParseUUIDPipe) id: string) {
     // Público
     return this.productosClient.send({ cmd: 'getProducto' }, { id });
   }
 
   @Post('productos')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden crear
   async createProducto(@Body() data: any) {
-    // Solo emprendedores/organizadores
     return this.productosClient.send({ cmd: 'createProducto' }, data);
   }
 
-  @Put('productos/:id')
-  @UseGuards(AuthGuard)
-  async updateProducto(@Param('id') id: string, @Body() data: any) {
+  @Patch('productos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden actualizar
+  async updateProducto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: any,
+  ) {
     return this.productosClient.send(
       { cmd: 'updateProducto' },
       { id, ...data },
@@ -222,8 +226,14 @@ export class ApiGatewayController {
   }
 
   @Delete('productos/:id')
-  @UseGuards(AuthGuard)
-  async deleteProducto(@Param('id') id: string) {
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden eliminar
+  async deleteProducto(@Param('id', ParseUUIDPipe) id: string) {
     return this.productosClient.send({ cmd: 'deleteProducto' }, { id });
+  }
+
+  @Get('health/productos')
+  async healthCheckProductos() {
+    return this.productosClient.send({ cmd: 'productos.health' }, {});
   }
 }

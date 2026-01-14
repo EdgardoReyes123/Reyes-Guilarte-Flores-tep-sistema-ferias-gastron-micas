@@ -22,7 +22,7 @@ import { ApiGatewayController } from './api-gateway.controller';
         transport: Transport.TCP,
         options: {
           host: '127.0.0.1',
-          port: 3003, // Puerto del Productos Service
+          port: 3004, // Puerto del Productos Service
         },
       },
     ]),

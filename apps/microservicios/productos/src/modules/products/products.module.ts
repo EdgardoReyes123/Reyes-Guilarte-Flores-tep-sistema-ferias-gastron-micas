@@ -14,7 +14,7 @@ import { Product } from './entities/product.entity';
         transport: Transport.TCP,
         options: {
           host: 'localhost',
-          port: 3002,
+          port: 3005,
         },
       },
     ]),

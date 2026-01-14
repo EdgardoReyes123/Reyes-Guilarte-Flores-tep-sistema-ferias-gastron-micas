@@ -23,19 +23,25 @@ export class ProductsService {
     available?: boolean;
   }): Promise<Product[]> {
     const query = this.productsRepository.createQueryBuilder('product');
-    
+
     if (filters?.stallId) {
-      query.andWhere('product.stallId = :stallId', { stallId: filters.stallId });
+      query.andWhere('product.stallId = :stallId', {
+        stallId: filters.stallId,
+      });
     }
-    
+
     if (filters?.category) {
-      query.andWhere('product.category = :category', { category: filters.category });
+      query.andWhere('product.category = :category', {
+        category: filters.category,
+      });
     }
-    
+
     if (filters?.available !== undefined) {
-      query.andWhere('product.isAvailable = :available', { available: filters.available });
+      query.andWhere('product.isAvailable = :available', {
+        available: filters.available,
+      });
     }
-    
+
     return await query.getMany();
   }
 
@@ -47,7 +53,10 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(
+    id: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
     const product = await this.findOne(id);
     Object.assign(product, updateProductDto);
     return await this.productsRepository.save(product);
@@ -58,5 +67,9 @@ export class ProductsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+  }
+
+  async countProducts(): Promise<number> {
+    return await this.productsRepository.count();
   }
 }
