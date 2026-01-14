@@ -13,7 +13,7 @@ export class CreateProductDto {
   stallId: string;
 
   @IsString()
-  @Length(1, 255)  
+  @Length(1, 255)
   name: string;
 
   @IsNumber()
@@ -21,7 +21,7 @@ export class CreateProductDto {
   price: number;
 
   @IsString()
-  @Length(1, 100)  
+  @Length(1, 100)
   category: string;
 
   @IsNumber()
