@@ -252,7 +252,10 @@ export class ApiGatewayController {
     }
 
     return firstValueFrom(
-      this.productosClient.send({ cmd: 'check_stock' }, { productId, quantity }),
+      this.productosClient.send(
+        { cmd: 'check_stock' },
+        { productId, quantity },
+      ),
     );
   }
 
@@ -264,7 +267,10 @@ export class ApiGatewayController {
     }
 
     return firstValueFrom(
-      this.productosClient.send({ cmd: 'decrement_stock' }, { productId, quantity }),
+      this.productosClient.send(
+        { cmd: 'decrement_stock' },
+        { productId, quantity },
+      ),
     );
   }
 

@@ -14,7 +14,7 @@ import { Order } from './entities/order.entity';
         name: 'PRODUCTS_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: process.env.PRODUCTS_HOST || 'localhost',
+          host: '127.0.0.1',
           port: parseInt(process.env.PRODUCTS_TCP_PORT || '3004', 10),
         },
       },

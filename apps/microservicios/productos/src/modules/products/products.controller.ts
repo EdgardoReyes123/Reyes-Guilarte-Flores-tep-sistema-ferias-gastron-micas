@@ -61,7 +61,6 @@ export class ProductsController {
     try {
       const { id } = data;
       this.logger.log(`Buscando producto ID: ${id}`);
-
       return await this.productsService.findOne(id);
     } catch (error) {
       this.logger.error(`Error buscando producto: ${error.message}`);
@@ -76,11 +75,16 @@ export class ProductsController {
   async checkStock(@Payload() data: any) {
     try {
       const { productId, quantity } = data;
-      this.logger.log(`Verificando stock para producto ${productId} cantidad ${quantity}`);
+      this.logger.log(
+        `Verificando stock para producto ${productId} cantidad ${quantity}`,
+      );
       return await this.productsService.checkStock(productId, quantity);
     } catch (error) {
       this.logger.error(`Error en check_stock: ${error.message}`);
-      throw new RpcException({ message: error.message || 'Error verificando stock', statusCode: error.status || 500 });
+      throw new RpcException({
+        message: error.message || 'Error verificando stock',
+        statusCode: error.status || 500,
+      });
     }
   }
 
@@ -88,11 +92,16 @@ export class ProductsController {
   async decrementStock(@Payload() data: any) {
     try {
       const { productId, quantity } = data;
-      this.logger.log(`Decrementando stock para producto ${productId} cantidad ${quantity}`);
+      this.logger.log(
+        `Decrementando stock para producto ${productId} cantidad ${quantity}`,
+      );
       return await this.productsService.decrementStock(productId, quantity);
     } catch (error) {
       this.logger.error(`Error en decrement_stock: ${error.message}`);
-      throw new RpcException({ message: error.message || 'Error decrementando stock', statusCode: error.status || 500 });
+      throw new RpcException({
+        message: error.message || 'Error decrementando stock',
+        statusCode: error.status || 500,
+      });
     }
   }
 

@@ -50,6 +50,7 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
+    console.log('Producto encontrado:', product);
     return product;
   }
 
@@ -73,13 +74,31 @@ export class ProductsService {
     return await this.productsRepository.count();
   }
 
-  async checkStock(productId: string, quantity: number): Promise<{ available: boolean; stock: number; id: string; price: number; stallId: string }> {
+  async checkStock(
+    productId: string,
+    quantity: number,
+  ): Promise<{
+    available: boolean;
+    stock: number;
+    id: string;
+    price: number;
+    stallId: string;
+  }> {
     const product = await this.findOne(productId);
     const available = product.isAvailable && product.stock >= quantity;
-    return { available, stock: product.stock, id: product.id, price: product.price as unknown as number, stallId: product.stallId };
+    return {
+      available,
+      stock: product.stock,
+      id: product.id,
+      price: product.price as unknown as number,
+      stallId: product.stallId,
+    };
   }
 
-  async decrementStock(productId: string, quantity: number): Promise<{ success: boolean; stock: number; id: string }> {
+  async decrementStock(
+    productId: string,
+    quantity: number,
+  ): Promise<{ success: boolean; stock: number; id: string }> {
     const product = await this.findOne(productId);
     if (product.stock < quantity) {
       throw new NotFoundException('Stock insuficiente');

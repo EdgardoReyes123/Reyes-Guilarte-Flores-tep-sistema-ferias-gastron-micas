@@ -1,6 +1,16 @@
-import { Injectable, Inject, BadRequestException, NotFoundException, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  NotFoundException,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderStatusDto, ORDER_STATUSES } from './dto/update-order-status.dto';
+import {
+  UpdateOrderStatusDto,
+  ORDER_STATUSES,
+} from './dto/update-order-status.dto';
 import { Order } from './entities/order.entity';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,7 +22,8 @@ export class OrdersService implements OnModuleInit {
   private readonly logger = new Logger(OrdersService.name);
 
   constructor(
-    @InjectRepository(Order) private readonly ordersRepository: Repository<Order>,
+    @InjectRepository(Order)
+    private readonly ordersRepository: Repository<Order>,
     @Inject('PRODUCTS_SERVICE') private readonly productsClient: ClientProxy,
   ) {}
 
@@ -20,25 +31,41 @@ export class OrdersService implements OnModuleInit {
     try {
       await this.productsClient.connect();
     } catch (e) {
-      this.logger.warn('No se pudo conectar a PRODUCTS_SERVICE en inicio (posible entorno local)');
+      this.logger.warn(
+        'No se pudo conectar a PRODUCTS_SERVICE en inicio (posible entorno local)',
+      );
     }
   }
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     // Verificar disponibilidad para cada producto
     for (const item of createOrderDto.items) {
       const available = await firstValueFrom(
-        this.productsClient.send('check_stock', { productId: item.productId, quantity: item.quantity }),
+        this.productsClient.send(
+          { cmd: 'check_stock' },
+          {
+            productId: item.productId,
+            quantity: item.quantity,
+          },
+        ),
       ).catch(() => null);
 
       if (!available || (available && !available.available)) {
-        throw new BadRequestException(`Producto ${item.productId} no disponible en la cantidad solicitada`);
+        throw new BadRequestException(
+          `Producto ${item.productId} no disponible en la cantidad solicitada`,
+        );
       }
     }
 
     // Reservar/actualizar stock (decremento)
     for (const item of createOrderDto.items) {
       await firstValueFrom(
-        this.productsClient.send('decrement_stock', { productId: item.productId, quantity: item.quantity }),
+        this.productsClient.send(
+          { cmd: 'decrement_stock' },
+          {
+            productId: item.productId,
+            quantity: item.quantity,
+          },
+        ),
       ).catch(() => null);
     }
 
@@ -53,7 +80,10 @@ export class OrdersService implements OnModuleInit {
   }
 
   async findByCustomer(customerId: string): Promise<Order[]> {
-    return this.ordersRepository.find({ where: { customerId }, order: { createdAt: 'DESC' } });
+    return this.ordersRepository.find({
+      where: { customerId },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async findById(id: string): Promise<Order> {
@@ -73,7 +103,9 @@ export class OrdersService implements OnModuleInit {
     const orderIndex = allowed.indexOf(order.status);
     const newIndex = allowed.indexOf(dto.status);
     if (newIndex < orderIndex) {
-      throw new BadRequestException('No se permite retroceder el estado del pedido');
+      throw new BadRequestException(
+        'No se permite retroceder el estado del pedido',
+      );
     }
 
     order.status = dto.status as any;
@@ -82,8 +114,13 @@ export class OrdersService implements OnModuleInit {
   }
 
   async getSalesForStall(stallId: string) {
-    const delivered = await this.ordersRepository.find({ where: { stallId, status: 'DELIVERED' } });
-    const itemsSold = delivered.reduce((sum, o) => sum + o.items.reduce((s, it) => s + (it.quantity || 0), 0), 0);
+    const delivered = await this.ordersRepository.find({
+      where: { stallId, status: 'DELIVERED' },
+    });
+    const itemsSold = delivered.reduce(
+      (sum, o) => sum + o.items.reduce((s, it) => s + (it.quantity || 0), 0),
+      0,
+    );
     return { stallId, itemsSold };
   }
 
