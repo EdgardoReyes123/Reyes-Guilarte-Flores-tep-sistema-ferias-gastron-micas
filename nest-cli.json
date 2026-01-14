@@ -3,7 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "apps",
   "monorepo": true,
-  "root": "apps/microservicios",
+  "root": "apps",
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "tsconfig.json"
@@ -13,46 +13,31 @@
       "type": "application",
       "root": "apps/api-gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/api-gateway/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
-      }
+      "sourceRoot": "apps/api-gateway/src"
     },
     "auth": {
       "type": "application",
       "root": "apps/microservicios/auth",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/auth/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/microservicios/auth/tsconfig.json"
-      }
+      "sourceRoot": "apps/microservicios/auth/src"
     },
     "productos": {
       "type": "application",
       "root": "apps/microservicios/productos",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/productos/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/microservicios/productos/tsconfig.json"
-      }
+      "sourceRoot": "apps/microservicios/productos/src"
     },
     "puestos": {
       "type": "application",
       "root": "apps/microservicios/puestos",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/puestos/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/microservicios/puestos/tsconfig.json"
-      }
+      "sourceRoot": "apps/microservicios/puestos/src"
     },
-    "shared": {
-      "type": "library",
-      "root": "libs/shared",
-      "entryFile": "index",
-      "sourceRoot": "libs/shared/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/shared/tsconfig.lib.json"
-      }
+    "pedidos": {
+      "type": "application",
+      "root": "apps/microservicios/pedidos",
+      "entryFile": "main",
+      "sourceRoot": "apps/microservicios/pedidos/src"
     }
   }
 }

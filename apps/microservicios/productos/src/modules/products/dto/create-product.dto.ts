@@ -1,11 +1,19 @@
-import { IsUUID, IsString, IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
+import { 
+  IsUUID, 
+  IsString, 
+  IsNumber, 
+  IsPositive, 
+  IsBoolean, 
+  IsOptional,
+  Length  
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsUUID()
   stallId: string; 
 
   @IsString()
-  @Length(1, 255)
+  @Length(1, 255)  
   name: string;
 
   @IsNumber()
@@ -13,7 +21,7 @@ export class CreateProductDto {
   price: number;
 
   @IsString()
-  @Length(1, 100)
+  @Length(1, 100)  
   category: string;
 
   @IsNumber()

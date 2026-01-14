@@ -193,37 +193,44 @@ export class ApiGatewayController {
 
   // ========== PRODUCTOS (algunos públicos, algunos protegidos) ==========
 
-  @Get('productos')
-  async getProductos(@Query() query: any) {
-    // Público - cualquiera puede ver productos
-    return this.productosClient.send({ cmd: 'getProductos' }, query || {});
-  }
 
-  @Get('productos/:id')
-  async getProducto(@Param('id') id: string) {
-    // Público
-    return this.productosClient.send({ cmd: 'getProducto' }, { id });
-  }
+// ========== PRODUCTOS  ==========
 
-  @Post('productos')
-  @UseGuards(AuthGuard)
-  async createProducto(@Body() data: any) {
-    // Solo emprendedores/organizadores
-    return this.productosClient.send({ cmd: 'createProducto' }, data);
-  }
-
-  @Put('productos/:id')
-  @UseGuards(AuthGuard)
-  async updateProducto(@Param('id') id: string, @Body() data: any) {
-    return this.productosClient.send(
-      { cmd: 'updateProducto' },
-      { id, ...data },
-    );
-  }
-
-  @Delete('productos/:id')
-  @UseGuards(AuthGuard)
-  async deleteProducto(@Param('id') id: string) {
-    return this.productosClient.send({ cmd: 'deleteProducto' }, { id });
-  }
+@Get('productos')
+async getProductos(@Query() query: any) {
+  // Público - cualquiera puede ver productos
+  return this.productosClient.send({ cmd: 'products.findAll' }, query || {});
 }
+
+@Get('productos/:id')
+async getProducto(@Param('id') id: string) {
+  // Público
+  return this.productosClient.send({ cmd: 'products.findOne' }, { id });
+}
+
+@Post('productos')
+@UseGuards(AuthGuard)
+async createProducto(@Body() data: any) {
+  // Solo emprendedores/organizadores
+  return this.productosClient.send({ cmd: 'products.create' }, data);
+}
+
+@Put('productos/:id')
+@UseGuards(AuthGuard)
+async updateProducto(@Param('id') id: string, @Body() data: any) {
+  return this.productosClient.send(
+    { cmd: 'products.update' },
+    { id, updateData: data }, // Nota: usar updateData como en el pattern
+  );
+}
+
+@Delete('productos/:id')
+@UseGuards(AuthGuard)
+async deleteProducto(@Param('id') id: string) {
+  return this.productosClient.send({ cmd: 'products.delete' }, { id });
+}
+
+@Get('health/productos')
+async healthCheckProductos() {
+  return this.productosClient.send({ cmd: 'products.health' }, {});
+}}
