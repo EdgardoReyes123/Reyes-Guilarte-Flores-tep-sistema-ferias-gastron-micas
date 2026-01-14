@@ -5,8 +5,20 @@ import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller'; // SOLO este controlador
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])],
-  controllers: [ProductsController], // Solo el controlador TCP
+  imports: [
+    TypeOrmModule.forFeature([Product]),
+    ClientsModule.register([
+      {
+        name: 'STALLS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'localhost',
+          port: 3005,
+        },
+      },
+    ]),
+  ],
+  controllers: [ProductsController],
   providers: [ProductsService],
   exports: [ProductsService]
 })

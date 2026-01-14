@@ -11,10 +11,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST', 'localhost'),
-        port: parseInt(configService.get('DB_PORT', '5432'), 10),
+        port: parseInt(configService.get('DB_PORT', '5436'), 10),
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD', 'password'),
-        database: configService.get('DB_DATABASE', 'orders_service_db'),
+        database: configService.get('DB_DATABASE', 'pedidos_service_db'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('DB_SYNCHRONIZE', 'true') === 'true',
         logging: true,

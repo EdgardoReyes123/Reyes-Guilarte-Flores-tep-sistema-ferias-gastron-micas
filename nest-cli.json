@@ -13,31 +13,55 @@
       "type": "application",
       "root": "apps/api-gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/api-gateway/src"
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+      }
     },
     "auth": {
       "type": "application",
       "root": "apps/microservicios/auth",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/auth/src"
+      "sourceRoot": "apps/microservicios/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/auth/tsconfig.json"
+      }
     },
     "productos": {
       "type": "application",
       "root": "apps/microservicios/productos",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/productos/src"
+      "sourceRoot": "apps/microservicios/productos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/productos/tsconfig.json"
+      }
     },
     "puestos": {
       "type": "application",
       "root": "apps/microservicios/puestos",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/puestos/src"
+      "sourceRoot": "apps/microservicios/puestos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/puestos/tsconfig.json"
+      }
     },
     "pedidos": {
       "type": "application",
       "root": "apps/microservicios/pedidos",
       "entryFile": "main",
-      "sourceRoot": "apps/microservicios/pedidos/src"
+      "sourceRoot": "apps/microservicios/pedidos/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/microservicios/pedidos/tsconfig.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
     }
   }
 }

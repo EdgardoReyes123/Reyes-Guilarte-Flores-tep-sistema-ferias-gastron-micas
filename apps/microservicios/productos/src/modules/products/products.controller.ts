@@ -1,37 +1,130 @@
-// products.controller.ts - SOLO para comunicación entre microservicios (TCP/RPC)
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { FilterProductsDto } from './dto/filter-products.dto';
+import { Logger } from '@nestjs/common';
 
 @Controller()
 export class ProductsController {
+  private readonly logger = new Logger(ProductsController.name);
+
   constructor(private readonly productsService: ProductsService) {}
 
-  @MessagePattern('productos.findAll')
-  findAll(@Payload() filters: FilterProductsDto) {
-    return this.productsService.findAll(filters);
+  @MessagePattern({ cmd: 'createProducto' })
+  async create(@Payload() data: any) {
+    try {
+      this.logger.log(`Creando producto: ${JSON.stringify(data)}`);
+
+      const createProductDto = data as CreateProductDto;
+      return await this.productsService.create(createProductDto);
+    } catch (error) {
+      this.logger.error(`Error creando producto: ${error.message}`);
+      throw new RpcException({
+        message: error.message || 'Error creando producto',
+        statusCode: error.status || 500,
+      });
+    }
   }
 
-  @MessagePattern('productos.create')
-  create(@Payload() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  @MessagePattern({ cmd: 'getProductos' })
+  async findAll(@Payload() filters: any) {
+    try {
+      this.logger.log(
+        `Buscando productos con filtros: ${JSON.stringify(filters)}`,
+      );
+
+      // Mapear los filtros del API Gateway al formato del servicio
+      const queryParams = {
+        stallId: filters?.stallId || filters?.puestoId, // Compatibilidad con ambos nombres
+        category: filters?.category || filters?.categoria,
+        available:
+          filters?.available !== undefined
+            ? filters.available === 'true'
+            : filters?.disponible !== undefined
+            ? filters.disponible === 'true'
+            : undefined,
+      };
+
+      return await this.productsService.findAll(queryParams);
+    } catch (error) {
+      this.logger.error(`Error buscando productos: ${error.message}`);
+      throw new RpcException({
+        message: error.message || 'Error obteniendo productos',
+        statusCode: error.status || 500,
+      });
+    }
   }
 
-  @MessagePattern('productos.findOne')
-  findOne(@Payload() id: number) {
-    return this.productsService.findOne(id);
+  @MessagePattern({ cmd: 'getProducto' })
+  async findOne(@Payload() data: any) {
+    try {
+      const { id } = data;
+      this.logger.log(`Buscando producto ID: ${id}`);
+
+      return await this.productsService.findOne(id);
+    } catch (error) {
+      this.logger.error(`Error buscando producto: ${error.message}`);
+      throw new RpcException({
+        message: error.message || 'Error obteniendo producto',
+        statusCode: error.status || 500,
+      });
+    }
   }
 
-  @MessagePattern('productos.update')
-  update(@Payload() data: { id: number, updateData: UpdateProductDto }) {
-    return this.productsService.update(data.id, data.updateData);
+  @MessagePattern({ cmd: 'updateProducto' })
+  async update(@Payload() data: any) {
+    try {
+      const { id, ...updateData } = data;
+      this.logger.log(`Actualizando producto ID: ${id}`);
+
+      const updateProductDto = updateData as UpdateProductDto;
+      return await this.productsService.update(id, updateProductDto);
+    } catch (error) {
+      this.logger.error(`Error actualizando producto: ${error.message}`);
+      throw new RpcException({
+        message: error.message || 'Error actualizando producto',
+        statusCode: error.status || 500,
+      });
+    }
   }
 
-  @MessagePattern('productos.remove')
-  remove(@Payload() id: number) {
-    return this.productsService.remove(id);
+  @MessagePattern({ cmd: 'deleteProducto' })
+  async remove(@Payload() data: any) {
+    try {
+      const { id } = data;
+      this.logger.log(`Eliminando producto ID: ${id}`);
+
+      await this.productsService.remove(id);
+      return {
+        success: true,
+        message: 'Producto eliminado exitosamente',
+      };
+    } catch (error) {
+      this.logger.error(`Error eliminando producto: ${error.message}`);
+      throw new RpcException({
+        message: error.message || 'Error eliminando producto',
+        statusCode: error.status || 500,
+      });
+    }
+  }
+
+  // Opcional: Health check para el microservicio
+  @MessagePattern({ cmd: 'productos.health' })
+  async healthCheck() {
+    try {
+      const count = await this.productsService.countProducts();
+      return {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        productosCount: count,
+      };
+    } catch (error) {
+      throw new RpcException({
+        message: 'Service unhealthy',
+        statusCode: 503,
+      });
+    }
   }
 }

@@ -11,12 +11,13 @@
   Request,
   UseGuards,
   InternalServerErrorException,
+  BadRequestException,
   Patch,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from './guards/auth.guard';
-import { catchError } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './guards/decorators/roles.decorator';
 import { AuthenticatedRequest } from './types/request.types';
@@ -27,6 +28,7 @@ export class ApiGatewayController {
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     @Inject('PRODUCTOS_SERVICE') private readonly productosClient: ClientProxy,
     @Inject('PUESTOS_SERVICE') private readonly puestosClient: ClientProxy,
+    @Inject('ORDERS_SERVICE') private readonly ordersClient: ClientProxy,
   ) {}
 
   // ========== ENDPOINTS PÚBLICOS ==========
@@ -193,44 +195,127 @@ export class ApiGatewayController {
 
   // ========== PRODUCTOS (algunos públicos, algunos protegidos) ==========
 
+  @Get('productos')
+  async getProductos(@Query() query: any) {
+    // Público - cualquiera puede ver productos
+    return this.productosClient.send({ cmd: 'getProductos' }, query || {});
+  }
 
-// ========== PRODUCTOS  ==========
+  @Get('productos/:id')
+  async getProducto(@Param('id', ParseUUIDPipe) id: string) {
+    // Público
+    return this.productosClient.send({ cmd: 'getProducto' }, { id });
+  }
 
-@Get('productos')
-async getProductos(@Query() query: any) {
-  // Público - cualquiera puede ver productos
-  return this.productosClient.send({ cmd: 'products.findAll' }, query || {});
+  @Post('productos')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden crear
+  async createProducto(@Body() data: any) {
+    return this.productosClient.send({ cmd: 'createProducto' }, data);
+  }
+
+  @Patch('productos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden actualizar
+  async updateProducto(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() data: any,
+  ) {
+    return this.productosClient.send(
+      { cmd: 'updateProducto' },
+      { id, ...data },
+    );
+  }
+
+  @Delete('productos/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin') // Solo sellers y admins pueden eliminar
+  async deleteProducto(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productosClient.send({ cmd: 'deleteProducto' }, { id });
+  }
+
+  @Get('health/productos')
+  async healthCheckProductos() {
+    return this.productosClient.send({ cmd: 'productos.health' }, {});
+  }
+
+  // ========== PEDIDOS / VENTAS ==========
+
+  @Post('orders')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('customer')
+  async createOrder(@Body() body: any, @Request() req: AuthenticatedRequest) {
+    const items = body?.items;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      throw new BadRequestException('Items son requeridos');
+    }
+
+    // Validar cada producto y el puesto
+    const validatedItems = [] as any[];
+    let stallId: string | null = null;
+    for (const it of items) {
+      const product = await firstValueFrom(
+        this.productosClient.send({ cmd: 'getProducto' }, { id: it.productId }),
+      ).catch(() => null);
+
+      if (!product) {
+        throw new BadRequestException(`Producto ${it.productId} no encontrado`);
+      }
+
+      if (!product.isAvailable || product.stock < it.quantity) {
+        throw new BadRequestException(`Producto ${product.id} no disponible en la cantidad solicitada`);
+      }
+
+      // Validar puesto activo
+      const puestoRes = await firstValueFrom(
+        this.puestosClient.send({ cmd: 'puestos.validateActivo' }, { puestoId: product.stallId }),
+      ).catch(() => null);
+
+      const esActivo = puestoRes?.esActivo ?? false;
+      if (!esActivo) {
+        throw new BadRequestException(`Puesto ${product.stallId} no está activo`);
+      }
+
+      if (!stallId) stallId = product.stallId;
+      validatedItems.push({ productId: product.id, quantity: it.quantity, price: product.price, stallId: product.stallId });
+    }
+
+    const payload = {
+      customerId: req.user.id,
+      stallId: stallId,
+      items: validatedItems,
+    };
+
+    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.create' }, payload));
+  }
+
+  @Get('orders/my')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('customer')
+  async myOrders(@Request() req: AuthenticatedRequest) {
+    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.findByCustomer' }, { customerId: req.user.id }));
+  }
+
+  @Get('orders/:id')
+  @UseGuards(AuthGuard)
+  async getOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.findById' }, { id }));
+  }
+
+  @Patch('orders/:id/status')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin')
+  async updateOrderStatus(@Param('id', ParseUUIDPipe) id: string, @Body() body: any, @Request() req: AuthenticatedRequest) {
+    const status = body?.status;
+    if (!status) throw new BadRequestException('Status es requerido');
+
+    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.updateStatus' }, { id, dto: { status }, userId: req.user.id, userRole: req.user.role }));
+  }
+
+  @Get('orders/stall/:stallId/sales')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('seller', 'admin')
+  async stallSales(@Param('stallId') stallId: string) {
+    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.getSalesForStall' }, { stallId }));
+  }
 }
-
-@Get('productos/:id')
-async getProducto(@Param('id') id: string) {
-  // Público
-  return this.productosClient.send({ cmd: 'products.findOne' }, { id });
-}
-
-@Post('productos')
-@UseGuards(AuthGuard)
-async createProducto(@Body() data: any) {
-  // Solo emprendedores/organizadores
-  return this.productosClient.send({ cmd: 'products.create' }, data);
-}
-
-@Put('productos/:id')
-@UseGuards(AuthGuard)
-async updateProducto(@Param('id') id: string, @Body() data: any) {
-  return this.productosClient.send(
-    { cmd: 'products.update' },
-    { id, updateData: data }, // Nota: usar updateData como en el pattern
-  );
-}
-
-@Delete('productos/:id')
-@UseGuards(AuthGuard)
-async deleteProducto(@Param('id') id: string) {
-  return this.productosClient.send({ cmd: 'products.delete' }, { id });
-}
-
-@Get('health/productos')
-async healthCheckProductos() {
-  return this.productosClient.send({ cmd: 'products.health' }, {});
-}}

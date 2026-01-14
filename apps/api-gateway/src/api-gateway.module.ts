@@ -37,6 +37,17 @@ import { ApiGatewayController } from './api-gateway.controller';
         },
       },
     ]),
+    // Configurar comunicación RPC con Orders Service
+    ClientsModule.register([
+      {
+        name: 'ORDERS_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: '127.0.0.1',
+          port: parseInt(process.env.ORDERS_TCP_PORT || '3011', 10),
+        },
+      },
+    ]),
   ],
   controllers: [ApiGatewayController],
   // NO providers - El gateway no tiene lógica de negocio
