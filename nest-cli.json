@@ -3,7 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "apps",
   "monorepo": true,
-  "root": "apps",
+  "root": "apps/microservicios",
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "tsconfig.json"

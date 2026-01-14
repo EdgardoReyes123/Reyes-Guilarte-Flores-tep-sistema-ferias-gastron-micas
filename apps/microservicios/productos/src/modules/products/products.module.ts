@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
-import { ProductsController } from './products.controller'; // SOLO este controlador
+import { Product } from './entities/product.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { ProductsController } from './products.controller'; // SOLO este control
   ],
   controllers: [ProductsController],
   providers: [ProductsService],
-  exports: [ProductsService]
+  exports: [ProductsService],
 })
 export class ProductsModule {}
