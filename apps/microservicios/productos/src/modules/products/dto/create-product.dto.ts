@@ -1,8 +1,16 @@
-import { IsUUID, IsString, IsNumber, IsPositive, IsBoolean, IsOptional } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsNumber,
+  IsPositive,
+  IsBoolean,
+  IsOptional,
+  Length,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsUUID()
-  stallId: string; 
+  stallId: string;
 
   @IsString()
   @Length(1, 255)
