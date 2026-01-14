@@ -63,15 +63,20 @@ export class ApiGatewayController {
 
   // ========== ENDPOINTS PROTEGIDOS ==========
 
-  @Get('auth/users/:id')
+  @Get('auth/users')
   @UseGuards(AuthGuard) // El guard valida el token internamente
-  async getUser(@Param('id') id: string) {
-    return this.authClient.send({ cmd: 'auth.getUser' }, { id });
+  async getUser(@Request() req: AuthenticatedRequest) {
+    const userId = req.user.id;
+    return this.authClient.send({ cmd: 'auth.getUser' }, { userId });
   }
 
-  @Put('auth/users/:id')
+  @Put('auth/users')
   @UseGuards(AuthGuard)
-  async updateUser(@Param('id') id: string, @Body() updateData: any) {
+  async updateUser(
+    @Request() req: AuthenticatedRequest,
+    @Body() updateData: any,
+  ) {
+    const id = req.user.id;
     return this.authClient.send(
       { cmd: 'auth.updateUser' },
       {
@@ -287,21 +292,33 @@ export class ApiGatewayController {
       }
 
       if (!product.isAvailable || product.stock < it.quantity) {
-        throw new BadRequestException(`Producto ${product.id} no disponible en la cantidad solicitada`);
+        throw new BadRequestException(
+          `Producto ${product.id} no disponible en la cantidad solicitada`,
+        );
       }
 
       // Validar puesto activo
       const puestoRes = await firstValueFrom(
-        this.puestosClient.send({ cmd: 'puestos.validateActivo' }, { puestoId: product.stallId }),
+        this.puestosClient.send(
+          { cmd: 'puestos.validateActivo' },
+          { puestoId: product.stallId },
+        ),
       ).catch(() => null);
 
       const esActivo = puestoRes?.esActivo ?? false;
       if (!esActivo) {
-        throw new BadRequestException(`Puesto ${product.stallId} no está activo`);
+        throw new BadRequestException(
+          `Puesto ${product.stallId} no está activo`,
+        );
       }
 
       if (!stallId) stallId = product.stallId;
-      validatedItems.push({ productId: product.id, quantity: it.quantity, price: product.price, stallId: product.stallId });
+      validatedItems.push({
+        productId: product.id,
+        quantity: it.quantity,
+        price: product.price,
+        stallId: product.stallId,
+      });
     }
 
     const payload = {
@@ -310,36 +327,56 @@ export class ApiGatewayController {
       items: validatedItems,
     };
 
-    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.create' }, payload));
+    return firstValueFrom(
+      this.ordersClient.send({ cmd: 'orders.create' }, payload),
+    );
   }
 
   @Get('orders/my')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('customer')
   async myOrders(@Request() req: AuthenticatedRequest) {
-    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.findByCustomer' }, { customerId: req.user.id }));
+    return firstValueFrom(
+      this.ordersClient.send(
+        { cmd: 'orders.findByCustomer' },
+        { customerId: req.user.id },
+      ),
+    );
   }
 
   @Get('orders/:id')
   @UseGuards(AuthGuard)
   async getOrder(@Param('id', ParseUUIDPipe) id: string) {
-    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.findById' }, { id }));
+    return firstValueFrom(
+      this.ordersClient.send({ cmd: 'orders.findById' }, { id }),
+    );
   }
 
   @Patch('orders/:id/status')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('seller', 'admin')
-  async updateOrderStatus(@Param('id', ParseUUIDPipe) id: string, @Body() body: any, @Request() req: AuthenticatedRequest) {
+  async updateOrderStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: any,
+    @Request() req: AuthenticatedRequest,
+  ) {
     const status = body?.status;
     if (!status) throw new BadRequestException('Status es requerido');
 
-    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.updateStatus' }, { id, dto: { status }, userId: req.user.id, userRole: req.user.role }));
+    return firstValueFrom(
+      this.ordersClient.send(
+        { cmd: 'orders.updateStatus' },
+        { id, dto: { status }, userId: req.user.id, userRole: req.user.role },
+      ),
+    );
   }
 
   @Get('orders/stall/:stallId/sales')
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('seller', 'admin')
   async stallSales(@Param('stallId') stallId: string) {
-    return firstValueFrom(this.ordersClient.send({ cmd: 'orders.getSalesForStall' }, { stallId }));
+    return firstValueFrom(
+      this.ordersClient.send({ cmd: 'orders.getSalesForStall' }, { stallId }),
+    );
   }
 }
